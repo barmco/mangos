@@ -205,5 +205,5 @@ func TestIpcListenerOptions(t *testing.T) {
 	MustSucceed(t, l.Listen())
 	i, e := os.Stat(strings.TrimPrefix(addr, "ipc://"))
 	MustSucceed(t, e)
-	MustBeTrue(t, i.Mode() & os.ModePerm == 0642)
+	MustBeTrue(t, i.Mode()&os.ModePerm == 0642)
 }

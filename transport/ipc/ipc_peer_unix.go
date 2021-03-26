@@ -23,5 +23,5 @@ import (
 	"net"
 )
 
-func getPeer(c *net.UnixConn, pipe transport.ConnPipe)  {
+func getPeer(c *net.UnixConn, pipe transport.ConnPipe) {
 }

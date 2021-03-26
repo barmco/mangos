@@ -498,12 +498,12 @@ func (s *socket) OpenContext() (protocol.Context, error) {
 		return nil, protocol.ErrClosed
 	}
 	c := &context{
-		s:          s,
-		cond:       sync.NewCond(s),
-		bestEffort: s.defCtx.bestEffort,
-		resendTime: s.defCtx.resendTime,
-		sendExpire: s.defCtx.sendExpire,
-		recvExpire: s.defCtx.recvExpire,
+		s:           s,
+		cond:        sync.NewCond(s),
+		bestEffort:  s.defCtx.bestEffort,
+		resendTime:  s.defCtx.resendTime,
+		sendExpire:  s.defCtx.sendExpire,
+		recvExpire:  s.defCtx.recvExpire,
 		failNoPeers: s.defCtx.failNoPeers,
 	}
 	s.ctxs[c] = struct{}{}
