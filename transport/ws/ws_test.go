@@ -15,12 +15,12 @@
 package ws
 
 import (
+	"context"
 	"net/http"
+	"nhooyr.io/websocket"
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/gorilla/websocket"
 
 	"go.nanomsg.org/mangos/v3"
 	. "go.nanomsg.org/mangos/v3/internal/test"
@@ -114,7 +114,6 @@ func TestWsMessageHeader(t *testing.T) {
 	TranVerifyMessageHeader(t, tran, nil, nil)
 }
 func TestWsSendAbort(t *testing.T) {
-	wd := &websocket.Dialer{}
 	sock := GetMockSocket()
 	defer MustClose(t, sock)
 	addr := AddrTestWS()
@@ -122,12 +121,13 @@ func TestWsSendAbort(t *testing.T) {
 	MustSucceed(t, e)
 	MustSucceed(t, l.Listen())
 
-	wd.Subprotocols = []string{sock.Info().PeerName + ".sp.nanomsg.org"}
-	ws, _, e := wd.Dial(addr, nil)
+	ws, _, e := websocket.Dial(context.Background(), addr, &websocket.DialOptions{
+		Subprotocols: []string{sock.Info().PeerName + ".gw.union-launcher.app"},
+	})
 	MustSucceed(t, e)
 	MustSend(t, sock, make([]byte, 2*1024*1024)) // TCP window size is 64k
 	time.Sleep(time.Millisecond * 100)
-	MustSucceed(t, ws.Close())
+	MustSucceed(t, ws.Close(websocket.StatusNoStatusRcvd, "abort"))
 	MustSend(t, sock, make([]byte, 2*1024*1024)) // TCP window size is 64k
 }
 
@@ -170,8 +170,10 @@ func TestWsBadWsVersion(t *testing.T) {
 	url := "http://" + addr[len("ws://"):]
 	req, e := http.NewRequest("GET", url, strings.NewReader(""))
 	MustSucceed(t, e)
+	req.Header.Set("Connection", "Upgrade")
+	req.Header.Set("Upgrade", "websocket")
 	req.Header.Set("Sec-WebSocket-Version", "10")
-	req.Header.Set("Sec-WebSocket-Protocol", sock.Info().PeerName+".sp.nanomsg.org")
+	req.Header.Set("Sec-WebSocket-Protocol", sock.Info().PeerName+".gw.union-launcher.app")
 
 	client := &http.Client{}
 	res, e := client.Do(req)
